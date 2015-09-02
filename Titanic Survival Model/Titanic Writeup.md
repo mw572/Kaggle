@@ -1,4 +1,4 @@
-# Kaggle - Titanic Survival 
+# Kaggle - Titanic Survival Prediction
 
 #### By Marcus Williamson - 02/09/15
 
@@ -233,6 +233,6 @@ We visualise the network below:
 #Plot our trained Neural Network
 plotnet(nnet,node_labs = TRUE,var_labs = TRUE)
 ```
-![Neural Net](Chart/NeuralNet.jpg)
+![Neural Net](Charts/NeuralNet.jpg)
 
 ---
