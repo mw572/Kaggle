@@ -38,7 +38,7 @@ set.seed(8484) # set our seed for reproducibility
 
 
 ## importing our data from file
-rawdata = read.csv("train.csv", header = TRUE)
+rawdata = read.csv("Data/train.csv", header = TRUE)
 
 
 ## initial look at our data
