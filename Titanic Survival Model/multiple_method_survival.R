@@ -1,3 +1,12 @@
+### KAGGLE - TITANIC SURVIVAL - 02/09/15 - Marcus Williamson ###
+
+## clear up environment
+ls()
+rm(list=ls())
+
+
+## import libraries
+
 library(lattice)
 library(ggplot2)
 library(caret)
