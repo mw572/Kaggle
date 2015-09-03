@@ -158,7 +158,11 @@ rawtestdata$Title <- ifelse(grepl('Mr.',rawtestdata$Name),'Mr',ifelse(grepl('Mrs
 
 rawtestdata$Title <- as.factor(rawtestdata$Title) #Set as factor
 
-names <- grepl("Name|Ticket|Cabin|PassengerId", colnames(rawtestdata)) # getting all non predictive variables column names
+#Replace N/A with median value, so we dont lose these data entries
+rawtestdata$Age[is.na(rawtestdata$Age)] <- median(rawtestdata$Age, na.rm=T)
+rawtestdata$Fare[is.na(rawtestdata$Fare)] <- median(rawtestdata$Fare, na.rm=T)
+
+names <- grepl("Name|Ticket|Cabin", colnames(rawtestdata)) # getting all non predictive variables column names
 
 rawtestdata = rawtestdata[,!names] # removing columns
 
@@ -174,5 +178,5 @@ survived <- predict(nnet, test)
 survived
 
 ##Output to CSV
-titanic.df = as.data.frame(survived)
-write.csv(titanic.df, file = "submission.csv")   
+titanic.df = as.data.frame(cbind.data.frame(test$PassengerId,survived))
+write.csv(titanic.df, file = "submission.csv")
