@@ -34,31 +34,39 @@ library(ipred)
 
 registerDoMC(cores = 8) # set cores for parallel processing
 
-set.seed(8484) # set our seed for reproducibility
+set.seed(84843) # set our seed for reproducibility
 
 
 ## importing our data from file
 rawdata = read.csv("Data/train.csv", header = TRUE)
 
 
-## initial look at our data
+##Initial look at our data
 dim(rawdata)
 View(rawdata)
 
 
-## removing obsolete variables from datasets
-surv <- rawdata$Survived # keeping our survival variables aside
-id <- rawdata$PassengerId # keeping passenger id
+##Removing obsolete variables from datasets
+
+Survived <- as.factor(rawdata$Survived) #Set as factor
+
+#Extract title from name. discard the rest
+rawdata$Title <- ifelse(grepl('Mr.',rawdata$Name),'Mr',ifelse(grepl('Mrs.',rawdata$Name),'Mrs',ifelse(grepl('Master.',rawdata$Name),'Master',ifelse(grepl('Dr.',rawdata$Name),'Dr',ifelse(grepl('Miss.',rawdata$Name),'Miss','Nothing')))))
+
+#Replace N/A ages with median age, so we dont lose these data entries
+rawdata$Age[is.na(rawdata$Age)] <- median(rawdata$Age, na.rm=T)
+
+rawdata$Title <- as.factor(rawdata$Title) #Set as factor
 
 names <- grepl("Name|Ticket|Cabin|PassengerId", colnames(rawdata)) # getting all non predictive variables column names
 
 rawdata = rawdata[,!names] # removing columns
 
+rawdataDummy <- dummyVars("~.",data=rawdata, fullRank=F)
 
-## futher cleansing of data incompatible with ML problems (na values)
-data = rawdata[complete.cases(rawdata),]
+data <- as.data.frame(predict(rawdataDummy,rawdata))
 
-data$Survived <- factor(data$Survived)
+data$Survived <- Survived # reattach our survival outcome (so it was unaffected by dummy Vars)
 
 ## partitioning training data into training and validation datasets
 inTrain <- createDataPartition(y=data$Survived,p=0.70, list=FALSE) # using a 70:30 split
@@ -72,7 +80,7 @@ outOfSampleError <- numeric()
 # add some parameters for train control
 TC <- trainControl(method = "cv", number = 12, returnData=FALSE, returnResamp="none", savePredictions=FALSE, verboseIter=FALSE , preProcOptions="pca", allowParallel=TRUE)
 
-plot(training_part$Survived, col="blue", main="Bar Plot of levels of the variable Survived within the sub data set", xlab="Survived levels", ylab="Frequency")
+#plot(training_part$Survived, col="blue", main="Bar Plot of levels of the variable Survived within the sub data set", xlab="Survived levels", ylab="Frequency")
 
 #Build Models
 # train, predict, calculate accuracy and out of sample error
@@ -96,7 +104,7 @@ nbPrediction <- predict(nb, testing_part)
 nbAccuracy <- sum(nbPrediction == testing_part$Survived) / length(nbPrediction)
 nbOutOfSampleError <- c(outOfSampleError, 1-nbAccuracy)
 
-nnet <- train(Survived ~ ., method="nnet", data=training_part, trControl= TC)
+nnet <- train(Survived ~ ., method="nnet", data=training_part, trControl= TC, maxit=2000)
 nnetPrediction <- predict(nnet, testing_part)
 nnetAccuracy <- sum(nnetPrediction == testing_part$Survived) / length(nnetPrediction)
 nnetOutOfSampleError <- c(outOfSampleError, 1-nnetAccuracy)
@@ -134,10 +142,37 @@ outOfSampleError <- c(bayesglmOutOfSampleError, gbmOutOfSampleError, knnOutOfSam
 results <- data.frame(trainMethods, accuracy, outOfSampleError)
 results[order(results$accuracy),]
 
-
 #Cross-validation
 predictCrossVal <- predict(nnet, testing_part)
 confusionMatrix(testing_part$Survived, predictCrossVal)
 
 #Plot our trained Neural Network
-plotnet(nnet,node_labs = TRUE,var_labs = TRUE)
+plotnet(nnet$finalModel,node_labs = TRUE,var_labs = TRUE)
+
+## Predicting on unseen data
+
+rawtestdata = read.csv("Data/test.csv", header = TRUE) #Load in test data
+
+#Extract title from name. discard the rest
+rawtestdata$Title <- ifelse(grepl('Mr.',rawtestdata$Name),'Mr',ifelse(grepl('Mrs.',rawtestdata$Name),'Mrs',ifelse(grepl('Master.',rawtestdata$Name),'Master',ifelse(grepl('Dr.',rawtestdata$Name),'Dr',ifelse(grepl('Miss.',rawtestdata$Name),'Miss','Nothing')))))
+
+rawtestdata$Title <- as.factor(rawtestdata$Title) #Set as factor
+
+names <- grepl("Name|Ticket|Cabin|PassengerId", colnames(rawtestdata)) # getting all non predictive variables column names
+
+rawtestdata = rawtestdata[,!names] # removing columns
+
+rawtestdataDummy <- dummyVars("~.",data=rawtestdata, fullRank=F)
+
+test <- as.data.frame(predict(rawtestdataDummy,rawtestdata))
+
+#Generate 'unknown' embarked column
+test$Embarked. = 0
+
+##Predict survivors!
+survived <- predict(nnet, test)
+survived
+
+##Output to CSV
+titanic.df = as.data.frame(survived)
+write.csv(titanic.df, file = "submission.csv")   
