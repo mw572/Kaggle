@@ -11,5 +11,5 @@ Please see Kaggle Competition [here](https://www.kaggle.com/c/titanic)
 >In this challenge, we were required to perform analysis of what sorts of people were likely to survive. In particular, to apply the tools of machine learning to predict which passengers survived the tragedy.
 
 Please find the repo [here](https://github.com/mw572/Kaggle/tree/master/Titanic%20Survival%20Model)
-
+Please find the final writeup [here](http://mw572.github.io/Kaggle/Titanic_Writeup.html)
 ---
