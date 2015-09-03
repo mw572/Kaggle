@@ -12,4 +12,5 @@ Please see Kaggle Competition [here](https://www.kaggle.com/c/titanic)
 
 Please find the repo [here](https://github.com/mw572/Kaggle/tree/master/Titanic%20Survival%20Model)
 Please find the final writeup [here](http://mw572.github.io/Kaggle/Titanic_Writeup.html)
+
 ---
